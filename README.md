@@ -26,30 +26,7 @@ A **full-stack web app** built with **Angular**, **Node.js**, **Apollo GraphQL**
 
 ---
 
-## 🧩 Project Structure
 
-meal-planner/
-├── client/                 # Angular frontend
-│   ├── src/
-│   │   ├── app/
-│   │   │   ├── recipe-list/        # Recipe list & delete
-│   │   │   ├── pages/add-recipe/   # Add recipe form
-│   │   │   ├── graphql.module.ts   # Apollo client setup
-│   │   │   ├── app-routing.module.ts
-│   │   │   ├── app.module.ts
-│   │   │   └── app.component.ts
-│   └── package.json
-│
-├── server/                # Node + GraphQL backend
-│   ├── src/
-│   │   ├── index.js        # Express + Apollo Server
-│   │   ├── models/Recipe.js
-│   │   ├── graphql/schema.js
-│   │   ├── graphql/resolvers.js
-│   └── package.json
-│
-└── README.md
----
 
 ## 🚀 Getting Started
 
