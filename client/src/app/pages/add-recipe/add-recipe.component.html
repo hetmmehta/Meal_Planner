@@ -1,0 +1,33 @@
+<div class="add-recipe-page">
+  <div class="header">
+    <h2>Add New Recipe</h2>
+    <button class="back-btn" routerLink="/">← Back</button>
+  </div>
+
+  <form (ngSubmit)="addRecipe()">
+    <label>Title</label>
+    <input [(ngModel)]="title" name="title" placeholder="Recipe title" required />
+
+    <label>Ingredients</label>
+    <input
+      [(ngModel)]="ingredients"
+      name="ingredients"
+      placeholder="Comma separated (e.g. Onion, Garlic, Tomato)"
+      required
+    />
+
+    <label>Instructions</label>
+    <textarea
+      [(ngModel)]="instructions"
+      name="instructions"
+      rows="5"
+      placeholder="Step-by-step instructions..."
+    ></textarea>
+
+    <button type="submit" [disabled]="loading">
+      {{ loading ? 'Adding...' : 'Add Recipe' }}
+    </button>
+  </form>
+
+  <p *ngIf="successMsg" class="success">{{ successMsg }}</p>
+</div>

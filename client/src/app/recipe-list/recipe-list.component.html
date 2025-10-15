@@ -1,0 +1,23 @@
+<div class="list-header">
+  <h1>🍽️ Recipe & Meal Planner</h1>
+  <button class="add-btn" routerLink="/add-recipe">➕ Add Recipe</button>
+</div>
+
+<div *ngIf="loading" class="loading">Loading recipes...</div>
+<div *ngIf="error" class="error">Error: {{ error.message }}</div>
+
+<div *ngIf="!loading && recipes.length > 0" class="recipe-container">
+  <div *ngFor="let recipe of recipes" class="recipe-card">
+    <button class="delete-icon" (click)="deleteRecipe(recipe.id)">✖</button>
+
+    <h2>{{ recipe.title }}</h2>
+    <p><strong>Ingredients:</strong> {{ recipe.ingredients.join(', ') }}</p>
+    <p *ngIf="recipe.instructions"><strong>Instructions:</strong> {{ recipe.instructions }}</p>
+    <small>🕒 {{ recipe.createdAt | date: 'medium' }}</small>
+  </div>
+</div>
+
+
+<div *ngIf="!loading && recipes.length === 0" class="empty">
+  No recipes found.
+</div>
