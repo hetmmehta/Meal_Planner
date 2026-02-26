@@ -33,7 +33,7 @@ A **full-stack web app** built with **Angular**, **Node.js**, **Apollo GraphQL**
 ### 1️⃣ Clone the Repository
 
 ```bash
-git clone https://github.com/<your-username>/meal-planner.git
+git clone https://github.com/hetmmehta/Meal_Planner.git
 cd meal-planner
 ```
 
