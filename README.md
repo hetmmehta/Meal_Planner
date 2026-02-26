@@ -1,4 +1,4 @@
-# 🥗 Recipe & Meal Planner
+# 🥗 Recipe Notebook
 
 A **full-stack web app** built with **Angular**, **Node.js**, **Apollo GraphQL**, and **MongoDB** that lets you **create, view, and delete recipes** — all connected through GraphQL.
 
