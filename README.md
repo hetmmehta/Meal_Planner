@@ -1,84 +1,159 @@
-# 🥗 Recipe Notebook
+# 🥗 Recipe & Meal Planner
 
-A **full-stack web app** built with **Angular**, **Node.js**, **Apollo GraphQL**, and **MongoDB** that lets you **create, view, and delete recipes** — all connected through GraphQL.
+[![CI](https://github.com/hetmmehta/Meal_Planner/actions/workflows/ci.yml/badge.svg)](https://github.com/hetmmehta/Meal_Planner/actions/workflows/ci.yml)
 
----
+A full-stack recipe manager built with **Angular 17**, **Apollo Client**, **Node.js/Express + Apollo Server**, and **MongoDB**. You can browse, add, edit, view and delete recipes through a GraphQL API.
 
-## 🚀 Features
+## ⚙️ Tech Stack
 
-- 🧾 View all recipes in a responsive card layout  
-- ➕ Add new recipes with title, ingredients, and instructions  
-- ❌ Delete recipes via a hover ✖ icon  
-- 🔄 Real-time updates via Apollo GraphQL  
-- 🧭 Separate `/add-recipe` page with Angular routing  
+| Layer    | Technology                                                       |
+| -------- | ---------------------------------------------------------------- |
+| Frontend | Angular 17 (NgModule + Router), TypeScript, Apollo Angular       |
+| Backend  | Node.js, Express 5, Apollo Server (`@apollo/server`)             |
+| Database | MongoDB with Mongoose                                            |
+| API      | GraphQL queries and mutations                                    |
+| Testing  | `node:test` + mongodb-memory-server (server), Karma/Jasmine (client) |
+| CI       | GitHub Actions (server tests, client build and tests)           |
 
----
+## 🧩 Features
 
-## 🛠️ Tech Stack
+- **Recipe list:** a card grid, newest first, showing image, category and cook time
+- **Recipe detail page** (`/recipe/:id`): description, ingredient list and numbered steps
+- **Add and edit recipes:** title, description, category, cook time, any number of ingredients and steps, and an image (paste a URL or upload a file under 1 MB, stored inline as a data URL)
+- **Delete with an inline confirmation** on the card
+- **The list stays in sync:** add, update and delete mutations use Apollo `refetchQueries`, so the list reloads from the server after every change
+- **Server-side validation:** the title is required, at least one ingredient is required, cook time must be 0–1440 minutes, and images must be http(s) or data URLs. Bad input returns `BAD_USER_INPUT` errors, unknown ids return `NOT_FOUND`, and the client shows these messages inline.
 
-| Layer | Technology |
-|:------|:------------|
-| **Frontend** | Angular 17, Apollo Angular, TypeScript |
-| **Backend** | Node.js, Apollo Server, Express |
-| **Database** | MongoDB (Mongoose) |
-| **GraphQL** | Queries + Mutations for recipe management |
-| **Styling** | Custom CSS with responsive grid layout |
+## 🗂️ Project Structure
 
----
-
-
+```
+Meal_Planner/
+├── client/                          # Angular frontend
+│   ├── src/
+│   │   ├── app/
+│   │   │   ├── recipe-list/         # Home page: recipe cards + delete
+│   │   │   ├── pages/add-recipe/    # Add / edit recipe form
+│   │   │   ├── pages/recipe-detail/ # Single recipe view
+│   │   │   ├── graphql/             # Typed GraphQL operations
+│   │   │   ├── models/recipe.ts     # Recipe interfaces
+│   │   │   ├── graphql.module.ts    # Apollo Client setup
+│   │   │   ├── app-routing.module.ts
+│   │   │   └── app.module.ts
+│   │   └── environments/            # GraphQL endpoint per build
+│   └── package.json
+│
+├── server/                          # Node + GraphQL backend
+│   ├── src/
+│   │   ├── index.js                 # Reads env, connects to MongoDB, starts Express
+│   │   └── app.js                   # Express app + Apollo Server middleware
+│   ├── graphql/
+│   │   ├── schema.js                # Type definitions
+│   │   ├── resolvers.js             # Query / Mutation resolvers
+│   │   └── validation.js            # Input validation helpers
+│   ├── models/Recipe.js             # Mongoose model
+│   ├── scripts/seed.js              # Sample data
+│   ├── test/                        # Server tests
+│   ├── .env.example
+│   └── package.json
+│
+├── .github/workflows/ci.yml
+├── LICENSE
+└── README.md
+```
 
 ## 🚀 Getting Started
 
-### 1️⃣ Clone the Repository
+Prerequisites: Node.js 20+ and a MongoDB database (local `mongod` or a free MongoDB Atlas cluster).
+
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/hetmmehta/Meal_Planner.git
-cd meal-planner
+cd Meal_Planner
 ```
 
-### 2️⃣ Set Up & Run the Backend
+### 2. Configure and run the backend
+
 ```bash
 cd server
 npm install
+cp .env.example .env   # then edit .env
+npm run seed           # optional: add a few sample recipes
 npm run dev
 ```
 
-Server starts at:
-**👉 http://localhost:4000/graphql**
+`server/.env` settings:
 
-### 3️⃣ Set Up & Run the Frontend
+| Variable      | Required | Default                 | Description                                  |
+| ------------- | -------- | ----------------------- | -------------------------------------------- |
+| `MONGODB_URI` | yes      | none                    | MongoDB connection string                    |
+| `PORT`        | no       | `4000`                  | Port for the GraphQL server                  |
+| `CORS_ORIGIN` | no       | `http://localhost:4200` | Allowed browser origin(s), comma separated   |
 
-Open a new terminal tab:
+The API runs at **http://localhost:4000/graphql**. Open it in a browser to use the Apollo Sandbox.
+
+### 3. Run the frontend
+
+In a new terminal:
+
 ```bash
 cd client
 npm install
-ng serve
+npm start
 ```
 
-Client starts at:
-**👉 http://localhost:4200**
+The app runs at **http://localhost:4200**. In development the client calls `http://localhost:4000/graphql`. Production builds call `/graphql` on the same origin. Both are set in `client/src/environments/`.
 
-## 🧠 Example GraphQL Queries
-### 🔍 Fetch All Recipes
+### 4. Run the tests
+
 ```bash
+cd server && npm test                                   # resolvers + validation (in-memory MongoDB)
+cd client && npx ng test --watch=false --browsers=ChromeHeadless
+```
+
+## 🧠 Example GraphQL Operations
+
+**Fetch all recipes**
+
+```graphql
 query {
   recipes {
     id
     title
+    category
+    cookTime
     ingredients
-    instructions
+    steps
+    createdAt
   }
 }
 ```
 
-### ➕ Add a Recipe
-```bash
+**Fetch one recipe**
+
+```graphql
+query {
+  recipe(id: "RECIPE_ID") {
+    title
+    description
+    ingredients
+    steps
+    imageUrl
+  }
+}
+```
+
+**Add a recipe**
+
+```graphql
 mutation {
   addRecipe(input: {
-    title: "Mango Smoothie",
-    ingredients: ["Mango", "Yogurt", "Honey"],
-    instructions: "Blend everything and chill."
+    title: "Mango Smoothie"
+    description: "A thick, cold smoothie."
+    category: "Snack"
+    cookTime: 5
+    ingredients: ["Mango", "Yogurt", "Honey"]
+    steps: ["Blend everything", "Serve chilled"]
   }) {
     id
     title
@@ -86,26 +161,37 @@ mutation {
 }
 ```
 
-### ❌ Delete a Recipe
-```bash
+**Update a recipe** (replaces the editable fields)
+
+```graphql
+mutation {
+  updateRecipe(id: "RECIPE_ID", input: {
+    title: "Mango Lassi"
+    ingredients: ["Mango", "Yogurt", "Cardamom"]
+    steps: ["Blend", "Chill"]
+  }) {
+    id
+    title
+    ingredients
+  }
+}
+```
+
+**Delete a recipe** (returns `true` if a recipe was deleted)
+
+```graphql
 mutation {
   deleteRecipe(id: "RECIPE_ID")
 }
 ```
 
+## 🏗️ Future Enhancements
 
-## 🧑‍💻 Development Notes
-The frontend and backend run independently.
-Ensure MongoDB is running locally or update your .env file with your cluster URI.
+- 🗓️ Weekly meal planner view
+- 🔍 Search and filter by category
+- 🖼️ Image storage outside the database (e.g. object storage)
+- 🔐 User accounts
 
-Apollo Client auto-refreshes recipe list after mutations.
+## 📜 License
 
-🏗️ Future Enhancements
-✏️ Edit Recipe feature
-🗓️ Weekly meal planner view
-🔖 Add tags & categories
-📸 Image upload for recipes
-🧠 Smart suggestions using AI
-📜 License
-
-MIT © 2025 Het Mehta
+[MIT](LICENSE) © 2026 Het Mehta
