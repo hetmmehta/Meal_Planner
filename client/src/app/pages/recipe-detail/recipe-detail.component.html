@@ -1,5 +1,8 @@
 <div class="recipe-detail-container" *ngIf="!loading && recipe">
-  <button class="back-btn" (click)="goBack()">⬅ Back</button>
+  <div class="actions">
+    <button class="back-btn" (click)="goBack()">⬅ Back</button>
+    <button class="edit-btn" [routerLink]="['/recipe', recipe.id, 'edit']">✏️ Edit</button>
+  </div>
 
   <div class="recipe-header">
     <img
@@ -10,24 +13,29 @@
     />
     <div class="recipe-meta">
       <h1>{{ recipe.title }}</h1>
-      <p class="category">📂 {{ recipe.category }}</p>
-      <p class="cooktime">🕒 {{ recipe.cookTime }} mins</p>
-      <p class="created">Added on {{ recipe.createdAt | date: 'mediumDate' }}</p>
+      <p *ngIf="recipe.category" class="category">📂 {{ recipe.category }}</p>
+      <p *ngIf="recipe.cookTime" class="cooktime">🕒 {{ recipe.cookTime }} mins</p>
+      <p *ngIf="recipe.createdAt" class="created">Added on {{ recipe.createdAt | date: 'mediumDate' }}</p>
     </div>
   </div>
 
-  <p class="description">{{ recipe.description }}</p>
+  <p *ngIf="recipe.description" class="description">{{ recipe.description }}</p>
 
   <h3>🧂 Ingredients</h3>
   <ul>
     <li *ngFor="let item of recipe.ingredients">{{ item }}</li>
   </ul>
 
-  <h3>👩‍🍳 Steps</h3>
-  <ol>
-    <li *ngFor="let step of recipe.steps">{{ step }}</li>
-  </ol>
+  <ng-container *ngIf="recipe.steps?.length">
+    <h3>👩‍🍳 Steps</h3>
+    <ol>
+      <li *ngFor="let step of recipe.steps">{{ step }}</li>
+    </ol>
+  </ng-container>
 </div>
 
 <div *ngIf="loading" class="loading">Loading recipe...</div>
-<div *ngIf="error" class="error">Error: {{ error.message }}</div>
+<div *ngIf="error" class="recipe-detail-container">
+  <button class="back-btn" (click)="goBack()">⬅ Back</button>
+  <div class="message error">Error: {{ error }}</div>
+</div>

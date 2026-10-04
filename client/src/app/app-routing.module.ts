@@ -8,6 +8,7 @@ const routes: Routes = [
   { path: '', component: RecipeListComponent },
   { path: 'add-recipe', component: AddRecipeComponent },
   { path: 'recipe/:id', component: RecipeDetailComponent },
+  { path: 'recipe/:id/edit', component: AddRecipeComponent },
   { path: '**', redirectTo: '' }, // fallback
 ];
 

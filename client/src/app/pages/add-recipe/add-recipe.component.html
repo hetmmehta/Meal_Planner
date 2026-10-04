@@ -1,14 +1,14 @@
 <div class="add-recipe-container">
-  <button class="back-btn" routerLink="/">⬅ Back</button>
-  <h2>➕ Add New Recipe</h2>
+  <button class="back-btn" [routerLink]="isEdit ? ['/recipe', editId] : '/'">⬅ Back</button>
+  <h2>{{ isEdit ? '✏️ Edit Recipe' : '➕ Add New Recipe' }}</h2>
 
   <div class="card">
     <form (ngSubmit)="onSubmit()" #recipeForm="ngForm">
       <!-- Image Upload & Preview -->
       <div class="form-group image-upload">
         <label for="image">Recipe Image</label>
-        <div class="image-preview" *ngIf="imagePreview; else noImage">
-          <img [src]="imagePreview" alt="Recipe preview" />
+        <div class="image-preview" *ngIf="recipe.imageUrl; else noImage">
+          <img [src]="recipe.imageUrl" alt="Recipe preview" />
         </div>
         <ng-template #noImage>
           <div class="no-image">No image selected</div>
@@ -78,6 +78,8 @@
           name="cookTime"
           class="form-control"
           [(ngModel)]="recipe.cookTime"
+          min="0"
+          max="1440"
         />
       </div>
 
@@ -85,7 +87,7 @@
       <div class="form-group">
         <label>Ingredients</label>
         <div
-          *ngFor="let ingredient of recipe.ingredients; let i = index"
+          *ngFor="let ingredient of recipe.ingredients; let i = index; trackBy: trackByIndex"
           class="ingredient-row"
         >
           <input
@@ -93,7 +95,7 @@
             class="form-control"
             [(ngModel)]="recipe.ingredients[i]"
             name="ingredient-{{ i }}"
-            (input)="onIngredientChange(i, $any($event.target).value)"
+            placeholder="e.g. 2 cups flour"
           />
           <button
             type="button"
@@ -116,7 +118,7 @@
       <div class="form-group">
         <label>Steps</label>
         <div
-          *ngFor="let step of recipe.steps; let i = index"
+          *ngFor="let step of recipe.steps; let i = index; trackBy: trackByIndex"
           class="step-row"
         >
           <textarea
@@ -124,7 +126,6 @@
             [(ngModel)]="recipe.steps[i]"
             name="step-{{ i }}"
             rows="2"
-            (input)="onStepChange(i, $any($event.target).value)"
           ></textarea>
           <button
             type="button"
@@ -139,11 +140,12 @@
         </button>
       </div>
 
-      <button type="submit" class="btn btn-primary mt-3">Add Recipe</button>
-    </form>
-  </div>
+      <div *ngIf="errorMsg" class="message error">{{ errorMsg }}</div>
+      <div *ngIf="successMsg" class="message success">{{ successMsg }}</div>
 
-  <div *ngIf="successMsg" class="success-msg mt-2">
-    {{ successMsg }}
+      <button type="submit" class="btn btn-primary mt-3" [disabled]="loading">
+        {{ loading ? 'Saving...' : isEdit ? 'Save Changes' : 'Add Recipe' }}
+      </button>
+    </form>
   </div>
 </div>

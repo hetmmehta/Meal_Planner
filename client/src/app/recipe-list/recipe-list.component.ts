@@ -1,28 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { Apollo, gql } from 'apollo-angular';
+import { Apollo } from 'apollo-angular';
 import { Router } from '@angular/router';
-
-const GET_RECIPES = gql`
-  query {
-    recipes {
-      id
-      title
-      description
-      category
-      cookTime
-      ingredients
-      steps
-      imageUrl
-      createdAt
-    }
-  }
-`;
-
-const DELETE_RECIPE = gql`
-  mutation DeleteRecipe($id: ID!) {
-    deleteRecipe(id: $id)
-  }
-`;
+import { Recipe } from '../models/recipe';
+import { DELETE_RECIPE, GET_RECIPES, errorMessage } from '../graphql/recipe.operations';
 
 @Component({
   selector: 'app-recipe-list',
@@ -30,9 +10,14 @@ const DELETE_RECIPE = gql`
   styleUrls: ['./recipe-list.component.css'],
 })
 export class RecipeListComponent implements OnInit {
-  recipes: any[] = [];
+  recipes: Recipe[] = [];
   loading = true;
-  error: any;
+  error: string | null = null;
+
+  /** Recipe whose delete confirmation is currently showing. */
+  confirmingId: string | null = null;
+  deletingId: string | null = null;
+  actionError: string | null = null;
 
   constructor(private apollo: Apollo, private router: Router) {}
 
@@ -40,47 +25,59 @@ export class RecipeListComponent implements OnInit {
     this.loadRecipes();
   }
 
-  // 🧭 Load all recipes
+  // 🧭 Load all recipes (kept in sync with the Apollo cache)
   loadRecipes() {
     this.apollo
-      .watchQuery({
-        query: GET_RECIPES,
-      })
+      .watchQuery({ query: GET_RECIPES })
       .valueChanges.subscribe({
-        next: (result: any) => {
-          this.recipes = result?.data?.recipes ?? [];
+        next: (result) => {
+          this.recipes = result.data?.recipes ?? [];
           this.loading = result.loading;
           this.error = null;
         },
         error: (err) => {
-          console.error('GraphQL error:', err);
-          this.error = err;
+          this.error = errorMessage(err);
           this.loading = false;
         },
       });
   }
 
-  // 🗑️ Delete a recipe
-  deleteRecipe(id: string, event: MouseEvent) {
+  // 🗑️ Ask for confirmation inline on the card
+  askDelete(id: string, event: MouseEvent) {
     event.stopPropagation(); // prevent card click
-    if (!confirm('🗑️ Are you sure you want to delete this recipe?')) return;
+    this.actionError = null;
+    this.confirmingId = id;
+  }
+
+  cancelDelete(event: MouseEvent) {
+    event.stopPropagation();
+    this.confirmingId = null;
+  }
+
+  confirmDelete(id: string, event: MouseEvent) {
+    event.stopPropagation();
+    this.deletingId = id;
 
     this.apollo
       .mutate({
         mutation: DELETE_RECIPE,
         variables: { id },
+        // Re-fetch the list so it reflects what the server now has.
+        refetchQueries: [{ query: GET_RECIPES }],
+        awaitRefetchQueries: true,
       })
       .subscribe({
-        next: (res: any) => {
-          if (res?.data?.deleteRecipe) {
-            this.recipes = this.recipes.filter((r) => r.id !== id);
-          } else {
-            alert('❌ Failed to delete recipe.');
+        next: (res) => {
+          if (!res.data?.deleteRecipe) {
+            this.actionError = 'That recipe was already deleted.';
           }
+          this.deletingId = null;
+          this.confirmingId = null;
         },
         error: (err) => {
-          console.error('Delete error:', err);
-          alert('❌ Error deleting recipe.');
+          this.actionError = `Could not delete recipe: ${errorMessage(err)}`;
+          this.deletingId = null;
+          this.confirmingId = null;
         },
       });
   }
@@ -88,5 +85,9 @@ export class RecipeListComponent implements OnInit {
   // 👁️ Navigate to recipe detail page
   viewRecipe(id: string) {
     this.router.navigate(['/recipe', id]);
+  }
+
+  trackById(_index: number, recipe: Recipe) {
+    return recipe.id;
   }
 }

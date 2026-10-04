@@ -1,1 +1,19 @@
 /* You can add global styles to this file, and also import other style files */
+
+/* Inline feedback messages shared across pages */
+.message {
+  margin: 12px 0;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.message.error {
+  background: #fdecea;
+  color: #b3261e;
+}
+
+.message.success {
+  background: #e8f5e9;
+  color: #2e7d32;
+}

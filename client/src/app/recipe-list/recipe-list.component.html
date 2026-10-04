@@ -4,11 +4,12 @@
 </div>
 
 <div *ngIf="loading" class="loading">Loading recipes...</div>
-<div *ngIf="error" class="error">Error: {{ error.message }}</div>
+<div *ngIf="error" class="message error">Error: {{ error }}</div>
+<div *ngIf="actionError" class="message error">{{ actionError }}</div>
 
 <div *ngIf="!loading && recipes.length > 0" class="recipe-container">
   <div
-    *ngFor="let recipe of recipes"
+    *ngFor="let recipe of recipes; trackBy: trackById"
     class="recipe-card"
     (click)="viewRecipe(recipe.id)"
   >
@@ -20,11 +21,35 @@
     />
     <div class="recipe-info">
       <h3>{{ recipe.title }}</h3>
+      <p class="meta">
+        <span *ngIf="recipe.category">📂 {{ recipe.category }}</span>
+        <span *ngIf="recipe.cookTime">🕒 {{ recipe.cookTime }} mins</span>
+      </p>
     </div>
-    <button class="delete-icon" (click)="deleteRecipe(recipe.id, $event)">✖</button>
+
+    <button
+      *ngIf="confirmingId !== recipe.id"
+      class="delete-icon"
+      title="Delete recipe"
+      (click)="askDelete(recipe.id, $event)"
+    >
+      ✖
+    </button>
+
+    <div *ngIf="confirmingId === recipe.id" class="confirm-delete">
+      <span>Delete this recipe?</span>
+      <button
+        class="confirm-btn"
+        [disabled]="deletingId === recipe.id"
+        (click)="confirmDelete(recipe.id, $event)"
+      >
+        {{ deletingId === recipe.id ? 'Deleting...' : 'Delete' }}
+      </button>
+      <button class="cancel-btn" (click)="cancelDelete($event)">Cancel</button>
+    </div>
   </div>
 </div>
 
-<div *ngIf="!loading && recipes.length === 0" class="empty">
+<div *ngIf="!loading && !error && recipes.length === 0" class="empty">
   No recipes found.
 </div>

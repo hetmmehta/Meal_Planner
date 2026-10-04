@@ -43,7 +43,13 @@ ul, ol {
   padding-left: 20px;
 }
 
-.back-btn {
+.actions {
+  display: flex;
+  justify-content: space-between;
+}
+
+.back-btn,
+.edit-btn {
   margin-bottom: 10px;
   background: #eee;
   border: none;

@@ -1,22 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Apollo, gql } from 'apollo-angular';
-
-const GET_RECIPE_BY_ID = gql`
-  query Recipe($id: ID!) {
-    recipe(id: $id) {
-      id
-      title
-      description
-      category
-      cookTime
-      ingredients
-      steps
-      imageUrl
-      createdAt
-    }
-  }
-`;
+import { Apollo } from 'apollo-angular';
+import { Recipe } from '../../models/recipe';
+import { GET_RECIPE, errorMessage } from '../../graphql/recipe.operations';
 
 @Component({
   selector: 'app-recipe-detail',
@@ -24,9 +10,9 @@ const GET_RECIPE_BY_ID = gql`
   styleUrls: ['./recipe-detail.component.css']
 })
 export class RecipeDetailComponent implements OnInit {
-  recipe: any = null;
+  recipe: Recipe | null = null;
   loading = true;
-  error: any;
+  error: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -46,18 +32,17 @@ export class RecipeDetailComponent implements OnInit {
   fetchRecipe(id: string) {
     this.apollo
       .watchQuery({
-        query: GET_RECIPE_BY_ID,
+        query: GET_RECIPE,
         variables: { id },
       })
       .valueChanges.subscribe({
-        next: (result: any) => {
-          this.recipe = result?.data?.recipe;
+        next: (result) => {
+          this.recipe = result.data?.recipe ?? null;
           this.loading = result.loading;
           this.error = null;
         },
         error: (err) => {
-          console.error('GraphQL error:', err);
-          this.error = err;
+          this.error = errorMessage(err);
           this.loading = false;
         },
       });
