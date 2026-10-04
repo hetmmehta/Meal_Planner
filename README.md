@@ -1,4 +1,4 @@
-# 🥗 Recipe & Meal Planner
+# 🥗 Recipe Notebook
 
 [![CI](https://github.com/hetmmehta/Meal_Planner/actions/workflows/ci.yml/badge.svg)](https://github.com/hetmmehta/Meal_Planner/actions/workflows/ci.yml)
 
