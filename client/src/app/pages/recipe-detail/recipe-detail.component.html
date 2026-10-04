@@ -1,0 +1,33 @@
+<div class="recipe-detail-container" *ngIf="!loading && recipe">
+  <button class="back-btn" (click)="goBack()">⬅ Back</button>
+
+  <div class="recipe-header">
+    <img
+      *ngIf="recipe.imageUrl"
+      [src]="recipe.imageUrl"
+      alt="{{ recipe.title }}"
+      class="recipe-img"
+    />
+    <div class="recipe-meta">
+      <h1>{{ recipe.title }}</h1>
+      <p class="category">📂 {{ recipe.category }}</p>
+      <p class="cooktime">🕒 {{ recipe.cookTime }} mins</p>
+      <p class="created">Added on {{ recipe.createdAt | date: 'mediumDate' }}</p>
+    </div>
+  </div>
+
+  <p class="description">{{ recipe.description }}</p>
+
+  <h3>🧂 Ingredients</h3>
+  <ul>
+    <li *ngFor="let item of recipe.ingredients">{{ item }}</li>
+  </ul>
+
+  <h3>👩‍🍳 Steps</h3>
+  <ol>
+    <li *ngFor="let step of recipe.steps">{{ step }}</li>
+  </ol>
+</div>
+
+<div *ngIf="loading" class="loading">Loading recipe...</div>
+<div *ngIf="error" class="error">Error: {{ error.message }}</div>

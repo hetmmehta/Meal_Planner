@@ -7,16 +7,23 @@
 <div *ngIf="error" class="error">Error: {{ error.message }}</div>
 
 <div *ngIf="!loading && recipes.length > 0" class="recipe-container">
-  <div *ngFor="let recipe of recipes" class="recipe-card">
-    <button class="delete-icon" (click)="deleteRecipe(recipe.id)">✖</button>
-
-    <h2>{{ recipe.title }}</h2>
-    <p><strong>Ingredients:</strong> {{ recipe.ingredients.join(', ') }}</p>
-    <p *ngIf="recipe.instructions"><strong>Instructions:</strong> {{ recipe.instructions }}</p>
-    <small>🕒 {{ recipe.createdAt | date: 'medium' }}</small>
+  <div
+    *ngFor="let recipe of recipes"
+    class="recipe-card"
+    (click)="viewRecipe(recipe.id)"
+  >
+    <img
+      *ngIf="recipe.imageUrl"
+      [src]="recipe.imageUrl"
+      alt="{{ recipe.title }}"
+      class="recipe-img"
+    />
+    <div class="recipe-info">
+      <h3>{{ recipe.title }}</h3>
+    </div>
+    <button class="delete-icon" (click)="deleteRecipe(recipe.id, $event)">✖</button>
   </div>
 </div>
-
 
 <div *ngIf="!loading && recipes.length === 0" class="empty">
   No recipes found.

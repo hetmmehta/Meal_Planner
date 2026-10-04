@@ -2,8 +2,12 @@ import mongoose from 'mongoose';
 
 const recipeSchema = new mongoose.Schema({
   title: { type: String, required: true },
-  ingredients: [{ type: String, required: true }],
-  instructions: { type: String, required: true },
+  description: String,
+  category: String,
+  cookTime: Number,
+  ingredients: [String],
+  steps: [String],
+  imageUrl: String,
   createdAt: { type: Date, default: Date.now },
 });
 

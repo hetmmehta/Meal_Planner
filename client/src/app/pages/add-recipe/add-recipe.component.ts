@@ -7,9 +7,9 @@ const ADD_RECIPE = gql`
     addRecipe(input: $input) {
       id
       title
-      ingredients
-      instructions
-      createdAt
+      category
+      cookTime
+      imageUrl
     }
   }
 `;
@@ -20,40 +20,81 @@ const ADD_RECIPE = gql`
   styleUrls: ['./add-recipe.component.css'],
 })
 export class AddRecipeComponent {
-  title = '';
-  ingredients = '';
-  instructions = '';
+  recipe = {
+    title: '',
+    description: '',
+    category: '',
+    cookTime: 0,
+    ingredients: [''],
+    steps: [''],
+    imageUrl: '',
+  };
+
+  categories = ['Breakfast', 'Lunch', 'Dinner', 'Snack', 'Dessert', 'Other'];
   loading = false;
   successMsg = '';
+  imagePreview: string | null = null;
 
   constructor(private apollo: Apollo, private router: Router) {}
 
-  addRecipe() {
-    if (!this.title.trim() || !this.ingredients.trim()) return;
+  // --- Form helpers ---
+  addIngredient() {
+    this.recipe.ingredients.push('');
+  }
+
+  removeIngredient(index: number) {
+    this.recipe.ingredients.splice(index, 1);
+  }
+
+  addStep() {
+    this.recipe.steps.push('');
+  }
+
+  removeStep(index: number) {
+    this.recipe.steps.splice(index, 1);
+  }
+
+  onIngredientChange(index: number, value: string) {
+    this.recipe.ingredients[index] = value;
+  }
+
+  onStepChange(index: number, value: string) {
+    this.recipe.steps[index] = value;
+  }
+
+  // --- Image Upload ---
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.imagePreview = reader.result as string;
+        this.recipe.imageUrl = this.imagePreview; // base64 preview stored as imageUrl
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  // --- Submit Recipe ---
+  onSubmit() {
+    if (!this.recipe.title.trim() || !this.recipe.ingredients.length) return;
 
     this.loading = true;
-    const ingredientsArray = this.ingredients.split(',').map(i => i.trim());
-
-    this.apollo.mutate({
-      mutation: ADD_RECIPE,
-      variables: {
-        input: {
-          title: this.title,
-          ingredients: ingredientsArray,
-          instructions: this.instructions,
+    this.apollo
+      .mutate({
+        mutation: ADD_RECIPE,
+        variables: { input: this.recipe },
+      })
+      .subscribe({
+        next: () => {
+          this.successMsg = '✅ Recipe added successfully!';
+          this.loading = false;
+          setTimeout(() => this.router.navigate(['/']), 1200);
         },
-      },
-    })
-    .subscribe({
-      next: () => {
-        this.successMsg = '✅ Recipe added successfully!';
-        this.loading = false;
-        setTimeout(() => this.router.navigate(['/']), 1000);
-      },
-      error: (err) => {
-        console.error('Error adding recipe:', err);
-        this.loading = false;
-      },
-    });
+        error: (err) => {
+          console.error('❌ Error adding recipe:', err);
+          this.loading = false;
+        },
+      });
   }
 }
