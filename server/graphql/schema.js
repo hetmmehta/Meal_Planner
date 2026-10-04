@@ -1,6 +1,4 @@
-import { buildSchema } from 'graphql';
-
-const schema = buildSchema(`
+const typeDefs = `#graphql
   type Recipe {
     id: ID!
     title: String!
@@ -34,6 +32,6 @@ const schema = buildSchema(`
     updateRecipe(id: ID!, input: RecipeInput!): Recipe!
     deleteRecipe(id: ID!): Boolean
   }
-`);
+`;
 
-export default schema;
+export default typeDefs;

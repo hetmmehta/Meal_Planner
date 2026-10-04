@@ -1,37 +1,33 @@
 import 'dotenv/config';
-import express from 'express';
-import cors from 'cors';
 import mongoose from 'mongoose';
-import { graphqlHTTP } from 'express-graphql';
-import schema from '../graphql/schema.js';
-import resolvers from '../graphql/resolvers.js';
+import { createApp } from './app.js';
 
-const app = express();
-app.use(cors());
-app.use(express.json());
-
-const PORT = process.env.PORT || 4000;
+const PORT = Number(process.env.PORT) || 4000;
 const MONGO_URI = process.env.MONGODB_URI;
+const CORS_ORIGINS = (process.env.CORS_ORIGIN || 'http://localhost:4200')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
 async function startServer() {
+  if (!MONGO_URI) {
+    console.error(
+      '❌ MONGODB_URI is not set. Copy server/.env.example to server/.env and add your connection string.'
+    );
+    process.exit(1);
+  }
+
   try {
     await mongoose.connect(MONGO_URI);
     console.log('✅ Connected to MongoDB');
 
-    app.use(
-      '/graphql',
-      graphqlHTTP({
-        schema,
-        rootValue: resolvers,
-        graphiql: { headerEditorEnabled: true },
-      })
-    );
-
+    const { app } = await createApp({ corsOrigins: CORS_ORIGINS });
     app.listen(PORT, () =>
       console.log(`🚀 Server ready at http://localhost:${PORT}/graphql`)
     );
   } catch (err) {
     console.error('❌ Error starting server:', err);
+    process.exit(1);
   }
 }
 
